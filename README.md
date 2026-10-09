@@ -13,6 +13,10 @@ A full-stack collaborative task management platform built with Next.js, Flask, a
 - **Robust Database Validation**: Strict PostgreSQL check constraints on task status values.
 - **Responsive Interface**: Tailwind CSS UI with status-driven styling (subtle line-through for completed tasks).
 
+### Email Notification Architecture
+- Integrated **Resend HTTP API** for asynchronous email dispatching over HTTPS.
+- In production demo without a custom domain, outbound emails are routed via Resend's verified test environment (`onboarding@resend.dev`) to prevent unverified domain delivery drops.
+
 ---
 
 ## Tech Stack
