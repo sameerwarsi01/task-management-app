@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from email_service import send_task_assigned_email
+from email_service import send_task_assigned_email, send_task_completed_email
 
 load_dotenv(dotenv_path="../.env")
 
@@ -30,13 +30,22 @@ def authenticate_user(req):
     except Exception:
         return None
 
-# Helper to send email in background so the UI never freezes
+# Background helper for assigned email
 def async_send_email(email, title, creator_name):
     def run():
         try:
             send_task_assigned_email(email, title, creator_name)
         except Exception as e:
-            print(f"[Warning] Failed to send email: {e}")
+            print(f"[Warning] Failed to send assign email: {e}")
+    threading.Thread(target=run, daemon=True).start()
+
+# Background helper for completed email
+def async_send_completed_email(email, title, completed_by_name):
+    def run():
+        try:
+            send_task_completed_email(email, title, completed_by_name)
+        except Exception as e:
+            print(f"[Warning] Failed to send completed email: {e}")
     threading.Thread(target=run, daemon=True).start()
 
 @app.route("/api/health", methods=["GET"])
@@ -84,7 +93,6 @@ def create_task():
         return jsonify({"error": "Title is required"}), 400
 
     try:
-        # Step A: Ensure logged-in user profile exists in 'profiles' table
         user_meta = user.user_metadata or {}
         full_name = user_meta.get("full_name") or user_meta.get("name") or user.email
         avatar_url = user_meta.get("avatar_url") or ""
@@ -96,7 +104,6 @@ def create_task():
             "avatar_url": avatar_url
         }).execute()
 
-        # Step B: Insert task
         task_payload = {
             "title": title,
             "description": description,
@@ -115,7 +122,6 @@ def create_task():
         print(f"==========================================\n")
         return jsonify({"error": str(db_err)}), 500
 
-    # Step C: Non-blocking email sending
     if assigned_to:
         try:
             assignee_res = supabase.table("profiles").select("email").eq("id", assigned_to).single().execute()
@@ -131,7 +137,7 @@ def create_task():
 
     return jsonify(new_task), 201
 
-# Update Route
+# 4. Update Route (With Task Completed Email Trigger)
 @app.route("/api/tasks/<task_id>", methods=["PATCH"])
 def update_task(task_id):
     user = authenticate_user(request)
@@ -139,12 +145,35 @@ def update_task(task_id):
         return jsonify({"error": "Unauthorized"}), 401
 
     updates = request.json or {}
+    new_status = updates.get("status", "").lower() if "status" in updates else None
+
     if "status" in updates:
         updates["status"] = updates["status"].lower()
     if "priority" in updates:
         updates["priority"] = updates["priority"].lower()
 
+    task_before = None
+    try:
+        t_res = supabase.table("tasks").select("*, creator:profiles!tasks_created_by_fkey(email)").eq("id", task_id).single().execute()
+        task_before = t_res.data
+    except Exception as e:
+        print(f"[Warning] Could not fetch task details before update: {e}")
+
     response = supabase.table("tasks").update(updates).eq("id", task_id).execute()
+
+    if new_status == "completed" and task_before:
+        try:
+            user_meta = user.user_metadata or {}
+            updater_name = user_meta.get("full_name") or user_meta.get("name") or user.email
+            creator_email = task_before.get("creator", {}).get("email")
+            task_title = task_before.get("title", "Task")
+
+            target_email = creator_email or user.email
+            if target_email:
+                async_send_completed_email(target_email, task_title, updater_name)
+        except Exception as err:
+            print(f"[Warning] Failed to trigger task completion email: {err}")
+
     return jsonify(response.data), 200
 
 # 5. Delete a task

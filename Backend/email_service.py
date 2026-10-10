@@ -13,7 +13,7 @@ def send_email_async(to_email, subject, html_content):
         try:
             resend.api_key = RESEND_API_KEY
             
-            # Resend sandbox mode: Agar custom domain nahi hai, toh verified admin ko route karega
+            # Resend sandbox mode handling
             recipient = to_email if to_email == VERIFIED_TEST_EMAIL else VERIFIED_TEST_EMAIL
             
             notice_header = ""
@@ -50,6 +50,21 @@ def send_task_assigned_email(to_email, task_title, creator_name):
             <h3 style="margin: 0; color: #111;">{task_title}</h3>
         </div>
         <p>Log in to your TaskFlow dashboard to view details and update progress.</p>
+    </div>
+    """
+    send_email_async(to_email, subject, body)
+
+def send_task_completed_email(to_email, task_title, completed_by_name):
+    subject = f"Task Completed: {task_title}"
+    body = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #16a34a;">Task Marked as Completed!</h2>
+        <p>Great news! The task <strong>{task_title}</strong> has been marked as completed by <strong>{completed_by_name}</strong>.</p>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 6px; margin: 12px 0;">
+            <h3 style="margin: 0; color: #15803d;">✔ {task_title}</h3>
+            <p style="margin: 4px 0 0 0; color: #166534; font-size: 14px;">Status: Completed</p>
+        </div>
+        <p>Visit your dashboard to review the updates.</p>
     </div>
     """
     send_email_async(to_email, subject, body)
