@@ -4,49 +4,38 @@ A full-stack collaborative task management platform built with Next.js, Flask, a
 
 ---
 
-## Features
+## Live Deployments & Repository
 
-- **Google OAuth Authentication**: Secure login handled via Supabase Auth with automatic session persistence and token refreshes.
-- **Task Management (CRUD)**: Create, view, delete, and cyclic status toggling (`todo` → `in_progress` → `done`).
-- **Dynamic Task Assignment**: Assign tasks to registered workspace members.
-- **Asynchronous Email Alerts**: Background non-blocking email notifications sent directly to assignees via Gmail SMTP.
-- **Robust Database Validation**: Strict PostgreSQL check constraints on task status values.
-- **Responsive Interface**: Tailwind CSS UI with status-driven styling (subtle line-through for completed tasks).
-
-### Email Notification Architecture
-- Integrated **Resend HTTP API** for asynchronous email dispatching over HTTPS.
-- In production demo without a custom domain, outbound emails are routed via Resend's verified test environment (`onboarding@resend.dev`) to prevent unverified domain delivery drops.
+- **Live Application (Frontend)**: [https://task-management-app-sable-eight.vercel.app](https://task-management-app-sable-eight.vercel.app)
+- **API Service (Backend)**: [https://task-management-app-thsv.onrender.com](https://task-management-app-thsv.onrender.com)
+- **GitHub Repository**: [https://github.com/sameerwarsi1/task-management-app](https://github.com/sameerwarsi1/task-management-app)
 
 ---
 
-## Tech Stack
-
-- **Frontend**: Next.js (App Router), React, TypeScript, Tailwind CSS, Lucide React, Axios
-- **Backend**: Python, Flask, Flask-CORS, Gunicorn
-- **Database & Auth**: Supabase (PostgreSQL, Supabase Auth)
-- **Email Service**: Python `smtplib` with daemon thread execution
-
----
-
-## Project Structure
+## System Architecture
 
 ```text
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   └── page.tsx
-│   │   ├── components/
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── TaskForm.tsx
-│   │   │   └── TaskList.tsx
-│   │   └── lib/
-│   │       ├── api.ts              # Axios interceptor for JWT auto-refresh
-│   │       └── supabaseClient.ts  # Browser client initialization
-│   └── package.json
-│
-├── backend/
-│   ├── app.py                      # Flask REST API routes & business logic
-│   ├── email_service.py            # Asynchronous SMTP mailing utility
-│   ├── requirements.txt            # Python dependencies
-│   └── .env.example
-└── README.md
++---------------------------------------------------------------+
+|                   Next.js Frontend (Vercel)                   |
+|   - Supabase Client SDK (Google OAuth 2.0 Auth Flow)          |
+|   - Task Creation, Dynamic User Assignment, Status Toggling   |
+|   - Axios Interceptor with automatic JWT Session Management   |
++-------------------------------+-------------------------------+
+                                |
+                    HTTPS / Bearer Auth Token
+                                v
++---------------------------------------------------------------+
+|                     Flask Backend (Render)                    |
+|   - Token Validation against Supabase Auth                    |
+|   - RESTful Endpoints (/api/tasks, /api/users)                |
+|   - Auto-sync User Profile Metadata (/profiles table)          |
++---------------+-------------------------------+---------------+
+                |                               |
+     PostgREST SDK Operations          Async Background Worker
+                v                               v
++-------------------------------+   +---------------------------+
+|      Supabase (Database)      |   |      Resend HTTP API      |
+|   - PostgreSQL Relational DB  |   |   - Task Assigned Alert   |
+|   - Foreign Keys & Constraints|   |   - Task Completed Alert  |
+|   - Migrations (/migrations)  |   |   - Non-blocking Thread   |
++-------------------------------+   +---------------------------+
