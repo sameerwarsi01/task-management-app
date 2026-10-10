@@ -161,7 +161,7 @@ def update_task(task_id):
 
     response = supabase.table("tasks").update(updates).eq("id", task_id).execute()
 
-    if new_status == "completed" and task_before:
+    if new_status in ["done", "completed"] and task_before:
         try:
             user_meta = user.user_metadata or {}
             updater_name = user_meta.get("full_name") or user_meta.get("name") or user.email
