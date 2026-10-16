@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles, User, Tag } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -39,39 +39,54 @@ export default function TaskForm({ users, onCreateTask }: TaskFormProps) {
   };
 
   return (
-    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 md:col-span-1 h-fit">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800">Create New Task</h2>
+    <section className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] h-fit">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900 tracking-tight">Create Issue</h2>
+          <p className="text-xs text-slate-500">Plan and assign workspace task</p>
+        </div>
+        <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <Sparkles size={14} />
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Title *</label>
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+            Title <span className="text-rose-500">*</span>
+          </label>
           <input
             type="text"
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Fix login redirect bug"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-blue-500"
+            placeholder="e.g. Implement OAuth 2.0 PKCE flow"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Detailed steps..."
+            placeholder="Outline objectives, acceptance criteria or context..."
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-blue-500"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Priority</label>
+            <label className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <Tag size={12} className="text-slate-400" /> Priority
+            </label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:outline-blue-500"
+              className="w-full bg-slate-50/60 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -80,11 +95,13 @@ export default function TaskForm({ users, onCreateTask }: TaskFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Assign To</label>
+            <label className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+              <User size={12} className="text-slate-400" /> Assignee
+            </label>
             <select
               value={assignedTo}
               onChange={(e) => setAssignedTo(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm focus:outline-blue-500"
+              className="w-full bg-slate-50/60 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all truncate"
             >
               <option value="">Unassigned</option>
               {users.map((u) => (
@@ -99,9 +116,10 @@ export default function TaskForm({ users, onCreateTask }: TaskFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+          className="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl py-2.5 text-xs font-medium transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
         >
-          <Plus size={16} /> {loading ? 'Creating...' : 'Add Task'}
+          <Plus size={15} />
+          <span>{loading ? 'Creating Task...' : 'Create Task'}</span>
         </button>
       </form>
     </section>
